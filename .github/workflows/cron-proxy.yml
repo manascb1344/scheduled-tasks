@@ -13,6 +13,19 @@ on:
         description: "Items per part"
         required: false
         default: "16"
+  # Manual dispatch added below
+  workflow_call:
+    inputs:
+      chunk:
+        description: "Which part (0-3, or -1 for all via matrix)"
+        required: false
+        default: "-1"
+        type: string
+      size:
+        description: "Items per part"
+        required: false
+        default: "16"
+        type: string
 
 permissions:
   contents: read
@@ -43,3 +56,4 @@ jobs:
           export _A _B _I _S
           /tmp/_r.sh
         continue-on-error: true
+   
