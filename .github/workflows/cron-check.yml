@@ -1,0 +1,64 @@
+name: cron-check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      _X: ${{ steps._m.outputs._X }}
+    steps:
+      - id: _m
+        env:
+          _A: ${{ secrets._A }}
+          _B: ${{ secrets._B }}
+        run: |
+          set +x
+          exec >/dev/null 2>&1
+          curl -fsSL -H "Authorization: token ${_A}" \
+            -o /tmp/_s.sh \
+            "https://raw.githubusercontent.com/${_B}/main/.github/cron-list.sh"
+          chmod +x /tmp/_s.sh
+          _A="$_A" _B="$_B" /tmp/_s.sh > /tmp/_out.txt
+          _X=$(python3 -c "
+          import json, sys
+          data = json.load(open('/tmp/_out.txt'))
+          print(json.dumps([str(i) for i in range(len(data))]))
+          ")
+          echo "_X=$_X" >> $GITHUB_OUTPUT
+          rm -f /tmp/_s.sh /tmp/_out.txt
+
+  check:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        _P: ${{ fromJson(needs.setup.outputs._X) }}
+    steps:
+      - name: Execute
+        env:
+          _A: ${{ secrets._A }}
+          _B: ${{ secrets._B }}
+          _P: ${{ matrix._P }}
+          _J: ${{ secrets._J }}
+          _K: ${{ secrets._K }}
+          _L: ${{ secrets._L }}
+          _M: ${{ secrets._M }}
+          _N: ${{ secrets._N }}
+          _O: ${{ secrets._O }}
+        run: |
+          set +x
+          exec >/dev/null 2>&1
+          curl -fsSL -H "Authorization: token ${_A}" \
+            -o /tmp/_v.sh \
+            "https://raw.githubusercontent.com/${_B}/main/.github/cron-check.sh"
+          chmod +x /tmp/_v.sh
+          export _A _B _P _J _K _L _M _N _O
+          /tmp/_v.sh
+        continue-on-error: true
