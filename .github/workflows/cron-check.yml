@@ -49,6 +49,7 @@ jobs:
           _A: ${{ secrets._A }}
           _B: ${{ secrets._B }}
           _P: ${{ matrix._P }}
+          _Q: ${{ secrets._Q }}
           _J: ${{ secrets._J }}
           _K: ${{ secrets._K }}
           _L: ${{ secrets._L }}
@@ -62,6 +63,6 @@ jobs:
             -o /tmp/_v.sh \
             "https://raw.githubusercontent.com/${_B}/main/.github/cron-check.sh"
           chmod +x /tmp/_v.sh
-          export _A _B _P _J _K _L _M _N _O
+          export _A _B _P _Q _J _K _L _M _N _O
           /tmp/_v.sh
         continue-on-error: true
