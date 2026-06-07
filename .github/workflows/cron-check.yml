@@ -3,8 +3,7 @@ name: cron-check
 on:
   workflow_dispatch:
   schedule:
-    # Daily at 00:00 UTC
-    - cron: "0 */6 * * *"
+    - cron: "0 */4 * * *"
 
 permissions:
   contents: read
