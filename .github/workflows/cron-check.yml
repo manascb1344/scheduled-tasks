@@ -20,10 +20,15 @@ jobs:
           _B: ${{ secrets._B }}
         run: |
           set +x
-          exec >/dev/null 2>&1
-          curl -fsSL -H "Authorization: token ${_A}" \
-            -o /tmp/_s.sh \
-            "https://raw.githubusercontent.com/${_B}/main/.github/cron-list.sh"
+          _url="https://raw.githubusercontent.com/${_B}/main/.github/cron-list.sh"
+          if ! curl -fsSL --retry 3 --retry-delay 1 --retry-max-time 20 \
+              -H "Authorization: token ${_A}" \
+              -o /tmp/_s.sh \
+              -w "\nHTTP_CODE=%{http_code}\n" \
+              "$_url"; then
+            echo "ERROR: failed to fetch cron-list.sh from ${_B}" >&2
+            exit 22
+          fi
           chmod +x /tmp/_s.sh
           _A="$_A" _B="$_B" /tmp/_s.sh > /tmp/_out.txt
           _X=$(python3 -c "
@@ -57,10 +62,15 @@ jobs:
           _O: ${{ secrets._O }}
         run: |
           set +x
-          exec >/dev/null 2>&1
-          curl -fsSL -H "Authorization: token ${_A}" \
-            -o /tmp/_v.sh \
-            "https://raw.githubusercontent.com/${_B}/main/.github/cron-check.sh"
+          _url="https://raw.githubusercontent.com/${_B}/main/.github/cron-check.sh"
+          if ! curl -fsSL --retry 3 --retry-delay 1 --retry-max-time 20 \
+              -H "Authorization: token ${_A}" \
+              -o /tmp/_v.sh \
+              -w "\nHTTP_CODE=%{http_code}\n" \
+              "$_url"; then
+            echo "ERROR: failed to fetch cron-check.sh from ${_B}" >&2
+            exit 22
+          fi
           chmod +x /tmp/_v.sh
           export _A _B _P _Q _J _K _L _M _N _O
           /tmp/_v.sh
